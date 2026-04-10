@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>物理噴射打火機</title>
+    <title>物理噴射打火機 (修正版)</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -40,38 +40,40 @@
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
-            z-index: 10;
+            z-index: 5; /* 【修正】將圖片層級設為較低 */
         }
 
-        /* 噴射火焰 */
+        /* 噴射火焰容器 */
         .flame-container {
             position: absolute;
-            top: 15px; 
+            /* 【修正】調整火焰位置，使其更貼合噴嘴 */
+            top: 25px; 
             left: 71.5%;
             transform: translateX(-50%) scale(0);
             transform-origin: bottom center;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-            z-index: 5;
+            z-index: 10; /* 【修正】將火焰層級設為較高，確保在圖片前方 */
         }
 
+        /* 【修正】火焰形狀，更尖銳、更有噴射感 */
         .flame-inner {
-            width: 8px;
-            height: 70px;
-            background: linear-gradient(to top, #fff, #00d4ff 40%, rgba(0, 80, 255, 0));
-            border-radius: 50% 50% 10% 10%;
+            width: 6px; /* 更細 */
+            height: 80px; /* 更長 */
+            background: linear-gradient(to top, #fff 10%, #00d4ff 50%, rgba(0, 80, 255, 0));
+            border-radius: 50% 50% 5% 5%; /* 底部更尖 */
             filter: blur(0.5px);
-            box-shadow: 0 0 15px #00d4ff, 0 0 30px rgba(0, 150, 255, 0.5);
+            box-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 150, 255, 0.5);
         }
 
         @keyframes jet-flicker {
             0% { transform: scaleY(1); opacity: 0.9; }
-            50% { transform: scaleY(1.05); opacity: 1; }
+            50% { transform: scaleY(1.08); opacity: 1; } /* 增加拉伸幅度 */
             100% { transform: scaleY(1); opacity: 0.9; }
         }
 
         .active .flame-container {
             transform: translateX(-50%) scale(1);
-            animation: jet-flicker 0.05s infinite;
+            animation: jet-flicker 0.04s infinite; /* 加快動畫速度 */
         }
 
         .hint {
@@ -98,11 +100,7 @@
         const lighter = document.getElementById('lighter');
         let isOn = false;
 
-        // 【計畫 B】直接將物理音效寫死在程式碼裡 (Base64)
-        // 這是一段真實的物理碰撞錄音轉成的編碼
-        const clickSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="); 
-        
-        // 為了確保聲音夠真實，這裡使用 Web Audio API 模擬物理撞擊的「咖」
+        // 使用 Web Audio API 合成物理撞擊音效
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playPhysicalClick() {
