@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>自訂圖片版打火機模擬器</title>
+    <title>我的自訂打火機</title>
     <style>
         :root {
-            --bg-color: #2c3e50; /* 背景設為較深的顏色以突顯火燄 */
-            /* 圖片大小設定 */
-            --lighter-width: 150px; 
+            --bg-color: #1a1a1a; 
+            --lighter-width: 160px; 
             --lighter-height: 400px;
         }
 
@@ -20,7 +19,6 @@
             margin: 0;
             background-color: var(--bg-color);
             overflow: hidden;
-            font-family: Arial, sans-serif;
             touch-action: manipulation;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
@@ -30,72 +28,66 @@
         .lighters-container {
             position: relative;
             cursor: pointer;
-            text-align: center;
-        }
-
-        /* 替換自訂打火機圖片 */
-        .lighter-image {
             width: var(--lighter-width);
             height: var(--lighter-height);
-            /* 請確保圖片與 html 檔案在同一個資料夾，並且檔名一致 */
+        }
+
+        /* 這裡路徑必須與 GitHub 上的圖片名稱完全一致 */
+        .lighter-image {
+            width: 100%;
+            height: 100%;
             background-image: url('lighter.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
-            z-index: 5;
+            z-index: 10;
         }
 
-        /* 火燄樣式 */
+        /* 火燄樣式 - 對齊你畫的圓盤噴嘴 */
         .flame {
-            /* 由於你的圖片火燄是幾何圖形，我們保留原本的樣式，但對齊噴嘴 */
-            width: 30px;
-            height: 60px;
+            width: 35px;
+            height: 70px;
             background: linear-gradient(to bottom, #fff, #ffeb3b, #ff9800, #f44336);
             border-radius: 50% 50% 20% 20%;
             position: absolute;
-            /* 根據你圖片的噴嘴位置進行精確對齊 (可能需要微調) */
-            top: -65px; 
-            left: calc(var(--lighter-width) / 2 + 15px); /* 對齊到圓盤上方 */
+            top: 25px; /* 調整火燄高低，使其剛好在噴嘴上方 */
+            left: 70%; /* 調整火燄左右位置，使其對齊噴嘴 */
             transform: translateX(-50%) scale(0);
             transform-origin: bottom center;
             filter: blur(1px);
-            box-shadow: 0 0 25px #ff9800, 0 0 50px #f44336;
+            box-shadow: 0 0 20px #ff9800, 0 0 40px #f44336;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 0; /* 放在圖片後面 */
+            z-index: 5;
         }
 
-        /* 火燄動畫 */
         @keyframes flicker {
-            0% { transform: translateX(-50%) scale(1.0) rotate(-1.5deg); opacity: 0.95; }
-            20% { transform: translateX(-50%) scale(1.02) rotate(1.5deg); opacity: 1; }
-            40% { transform: translateX(-50%) scale(0.98) rotate(-0.8deg); opacity: 0.98; }
-            60% { transform: translateX(-50%) scale(1.05) rotate(0.8deg); opacity: 1; }
-            80% { transform: translateX(-50%) scale(0.95) rotate(-0.5deg); opacity: 0.99; }
-            100% { transform: translateX(-50%) scale(1.0) rotate(-1.5deg); opacity: 0.95; }
+            0% { transform: translateX(-50%) scale(1) rotate(-1deg); }
+            50% { transform: translateX(-50%) scale(1.05) rotate(1deg); }
+            100% { transform: translateX(-50%) scale(1) rotate(-1deg); }
         }
 
-        /* 點火狀態 */
-        .lighters-container.active .flame {
-            transform: translateX(-50%) scale(1.2); /* 稍微放大火燄 */
-            animation: flicker 0.15s infinite;
+        .active .flame {
+            transform: translateX(-50%) scale(1.2);
+            animation: flicker 0.1s infinite;
         }
 
-        /* 提示 */
         .hint {
-            color: #bdc3c7;
-            margin-top: 20px;
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
+            color: #555;
+            text-align: center;
             font-size: 14px;
-            opacity: 0.7;
         }
     </style>
 </head>
 <body>
 
-    <div class="lighters-container" id="lighter-system">
+    <div class="lighters-container" id="lighter">
         <div class="flame"></div>
         <div class="lighter-image"></div>
-        <p class="hint">點擊開關火燄</p>
+        <div class="hint">點擊打火機開關</div>
     </div>
 
     <audio id="click-sound" preload="auto">
@@ -103,26 +95,20 @@
     </audio>
 
     <script>
-        const lighterSystem = document.getElementById('lighter-system');
-        const clickSound = document.getElementById('click-sound');
+        const lighter = document.getElementById('lighter');
+        const sound = document.getElementById('click-sound');
         let isOn = false;
 
-        // 點擊開關火燄
-        lighterSystem.addEventListener('click', () => {
+        lighter.addEventListener('click', () => {
             isOn = !isOn;
             if (isOn) {
-                lighterSystem.classList.add('active');
-                // 點火時網頁背景微微變紅
-                document.body.style.backgroundColor = "#5d4037";
-                
-                // 播放“咖”聲
-                // 每次播放都重新開始
-                clickSound.currentTime = 0; 
-                clickSound.play();
+                lighter.classList.add('active');
+                document.body.style.backgroundColor = "#3d2b1f";
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("等待使用者互動後播放"));
             } else {
-                lighterSystem.classList.remove('active');
-                // 熄火時還原背景色
-                document.body.style.backgroundColor = "var(--bg-color)";
+                lighter.classList.remove('active');
+                document.body.style.backgroundColor = "#1a1a1a";
             }
         });
     </script>
