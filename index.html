@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>防風噴射打火機 - 最終優化版</title>
+    <title>真實物理防風打火機 (狠狠加粗版)</title>
     <style>
         :root {
-            /* 調亮背景，確保看得到黑色機身 */
+            /* 預設暗灰色背景 */
             --bg-color: #1a1c1e; 
+            /* 點火時環境色：變暖、變亮 */
             --bg-active: #2c241e; 
             --lighter-width: 180px;
             --lighter-height: 440px;
@@ -43,14 +44,14 @@
             background-image: url('lighter.png');
             background-size: contain;
             background-repeat: no-repeat;
-            background-position: center bottom; /* 鎖定底部對齊 */
+            background-position: center bottom;
             position: absolute;
             bottom: 0;
             z-index: 5;
             transition: filter 0.3s ease;
         }
 
-        /* 火焰容器：使用百分比定位，鎖定在圖片的噴嘴處 */
+        /* 火焰容器：鎖定在噴嘴位置 */
         .flame-container {
             position: absolute;
             bottom: 84.5%; /* 鎖定在噴嘴高度 */
@@ -58,51 +59,52 @@
             transform: translateX(-50%) scale(0);
             transform-origin: bottom center;
             transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10; /* 確保在最前面 */
+            z-index: 10;
             pointer-events: none;
         }
 
-        /* 噴射火焰：下藍核心 (加粗) */
+        /* 【重要】真實噴射火焰：下藍核心 (狠狠加粗) */
         .flame-inner-core {
-            width: 12px; /* 加粗 */
-            height: 150px;
-            background: linear-gradient(to top, #fff 0%, #00d4ff 35%, rgba(0, 80, 255, 0) 100%);
+            width: 20px; /* 大幅加粗 */
+            height: 160px; /* 增加高度 */
+            background: linear-gradient(to top, #fff 0%, #00d4ff 40%, rgba(0, 80, 255, 0) 100%);
             border-radius: 50% 50% 10% 10%;
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: 0 0 25px #00d4ff;
+            box-shadow: 0 0 30px #00d4ff;
         }
 
-        /* 噴射火焰：上橘外焰 (加粗) */
+        /* 【重要】真實噴射火焰：上橘外焰 (融合並狠狠加粗) */
         .flame-outer-glow {
-            width: 26px; /* 加粗 */
-            height: 170px;
-            background: linear-gradient(to top, rgba(255, 110, 0, 0.8) 0%, rgba(255, 50, 0, 0) 100%);
+            width: 40px; /* 大幅加粗 */
+            height: 180px; /* 稍微高於藍核心 */
+            background: linear-gradient(to top, rgba(255, 120, 0, 0.8) 0%, rgba(255, 60, 0, 0) 100%);
             border-radius: 50% 50% 20% 20%;
             position: absolute;
             bottom: -5px;
             left: 50%;
             transform: translateX(-50%);
             filter: blur(2.5px);
-            box-shadow: 0 0 45px #ff6a00, 0 0 90px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 0 50px #ff6a00, 0 0 100px rgba(255, 0, 0, 0.6);
         }
 
-        @keyframes jet-shake {
-            0% { transform: translateX(-50%) scaleY(1); }
-            50% { transform: translateX(-50%) scaleY(1.06) scaleX(1.03); }
-            100% { transform: translateX(-50%) scaleY(1); }
+        /* 強勁噴射震動動畫 */
+        @keyframes jet-pulse {
+            0% { transform: translateX(-50%) scale(1); opacity: 0.95; }
+            50% { transform: translateX(-50%) scale(1.03) scaleY(1.08); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0.95; }
         }
 
-        /* 點火後的視覺效果 */
+        /* 點火後的環境火光感同步強化 */
         .active .lighter-image {
-            filter: drop-shadow(0 0 40px rgba(255, 130, 0, 0.5)) brightness(1.1);
+            filter: drop-shadow(0 0 60px rgba(255, 150, 0, 0.8)) brightness(1.2); /* 環境光暈更寬廣 */
         }
 
         .active .flame-container {
             transform: translateX(-50%) scale(1);
-            animation: jet-shake 0.05s infinite;
+            animation: jet-pulse 0.04s infinite; /* 加快動畫速度模擬高壓噴射 */
         }
 
         .hint {
@@ -164,10 +166,12 @@
             isOn = !isOn;
             if (isOn) {
                 lighter.classList.add('active');
+                // 點火時背景變暖、變亮，呈現火光感
                 document.body.style.backgroundColor = "var(--bg-active)";
                 playPhysicalClick();
             } else {
                 lighter.classList.remove('active');
+                // 熄火還原背景色
                 document.body.style.backgroundColor = "var(--bg-color)";
             }
         });
