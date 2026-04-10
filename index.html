@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>我的自訂打火機</title>
+    <title>防風噴射打火機</title>
     <style>
         :root {
-            --bg-color: #1a1a1a; 
+            --bg-color: #0d0d0d; 
             --lighter-width: 160px; 
             --lighter-height: 400px;
         }
@@ -32,7 +32,6 @@
             height: var(--lighter-height);
         }
 
-        /* 這裡路徑必須與 GitHub 上的圖片名稱完全一致 */
         .lighter-image {
             width: 100%;
             height: 100%;
@@ -44,39 +43,59 @@
             z-index: 10;
         }
 
-        /* 火燄樣式 - 對齊你畫的圓盤噴嘴 */
-        .flame {
-            width: 35px;
-            height: 70px;
-            background: linear-gradient(to bottom, #fff, #ffeb3b, #ff9800, #f44336);
-            border-radius: 50% 50% 20% 20%;
+        /* 防風噴射火焰效果 */
+        .flame-container {
             position: absolute;
-            top: 25px; /* 調整火燄高低，使其剛好在噴嘴上方 */
-            left: 70%; /* 調整火燄左右位置，使其對齊噴嘴 */
+            top: 15px; /* 根據噴嘴位置微調 */
+            left: 70%; /* 根據噴嘴位置微調 */
             transform: translateX(-50%) scale(0);
             transform-origin: bottom center;
-            filter: blur(1px);
-            box-shadow: 0 0 20px #ff9800, 0 0 40px #f44336;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.2);
             z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        @keyframes flicker {
-            0% { transform: translateX(-50%) scale(1) rotate(-1deg); }
-            50% { transform: translateX(-50%) scale(1.05) rotate(1deg); }
-            100% { transform: translateX(-50%) scale(1) rotate(-1deg); }
+        /* 外層淡藍色火燄 */
+        .flame-outer {
+            width: 12px;
+            height: 90px;
+            background: linear-gradient(to top, rgba(0, 150, 255, 0.8), rgba(0, 80, 255, 0.1));
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(2px);
+            position: relative;
         }
 
-        .active .flame {
-            transform: translateX(-50%) scale(1.2);
-            animation: flicker 0.1s infinite;
+        /* 內層深藍/白核心噴頭 */
+        .flame-inner {
+            width: 6px;
+            height: 50px;
+            background: linear-gradient(to top, #fff, #00d4ff);
+            border-radius: 50% 50% 10% 10%;
+            position: absolute;
+            bottom: 0;
+            filter: blur(1px);
+            box-shadow: 0 0 15px #00d4ff;
+        }
+
+        /* 噴射震動動畫 */
+        @keyframes jet-flicker {
+            0% { transform: translateX(-50%) scaleY(1) rotate(-0.5deg); opacity: 0.9; }
+            50% { transform: translateX(-50%) scaleY(1.05) rotate(0.5deg); opacity: 1; }
+            100% { transform: translateX(-50%) scaleY(1) rotate(-0.5deg); opacity: 0.9; }
+        }
+
+        .active .flame-container {
+            transform: translateX(-50%) scale(1);
+            animation: jet-flicker 0.05s infinite;
         }
 
         .hint {
             position: absolute;
             bottom: -40px;
             width: 100%;
-            color: #555;
+            color: #444;
             text-align: center;
             font-size: 14px;
         }
@@ -85,30 +104,52 @@
 <body>
 
     <div class="lighters-container" id="lighter">
-        <div class="flame"></div>
+        <div class="flame-container">
+            <div class="flame-outer"></div>
+            <div class="flame-inner"></div>
+        </div>
         <div class="lighter-image"></div>
-        <div class="hint">點擊打火機開關</div>
+        <div class="hint">CLICK TO IGNITE</div>
     </div>
-
-    <audio id="click-sound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2560/2560-preview.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
         const lighter = document.getElementById('lighter');
-        const sound = document.getElementById('click-sound');
         let isOn = false;
+
+        // 使用 Web Audio API 合成更清脆的「咖」聲，解決外部檔案載入失敗的問題
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playClickSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            // 模擬金屬撞擊聲 (High-pass style)
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
 
         lighter.addEventListener('click', () => {
             isOn = !isOn;
             if (isOn) {
                 lighter.classList.add('active');
-                document.body.style.backgroundColor = "#3d2b1f";
-                sound.currentTime = 0;
-                sound.play().catch(e => console.log("等待使用者互動後播放"));
+                document.body.style.backgroundColor = "#050a10"; // 暗藍色光暈
+                playClickSound();
             } else {
                 lighter.classList.remove('active');
-                document.body.style.backgroundColor = "#1a1a1a";
+                document.body.style.backgroundColor = "#0d0d0d";
             }
         });
     </script>
