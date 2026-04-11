@@ -3,212 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jet Lighter Experience</title>
+    <title>虛擬噴射打火機</title>
     <style>
-        :root {
-            --bg-color: #0a0a0a;
-            --ignited-bg: #1a1815;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
+        /* 基礎設定 */
+        body, html {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505; /* 預設極暗環境 */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-            transition: background-color 0.15s ease-out;
             overflow: hidden;
-            font-family: sans-serif;
-        }
-
-        /* 點火時背景調亮並產生暖色調 */
-        body.is-active {
-            background-color: var(--ignited-bg);
-        }
-
-        /* 打火機容器 - 決定整體大小與縮放 */
-        .lighter-wrapper {
-            position: relative;
-            width: 85vw;
-            max-width: 320px;
-            cursor: pointer;
+            /* 禁用選取與預設點擊高光，提升 App 原生感 */
             user-select: none;
-            transition: transform 0.1s active;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            transition: background-color 0.3s ease;
         }
 
-        .lighter-wrapper:active {
-            transform: scale(0.98);
+        /* 點火時的整體環境光暈 */
+        body.lit {
+            background-color: #2a1505;
         }
 
-        /* 機身圖片 */
-        .lighter-body {
-            width: 100%;
-            height: auto;
-            display: block;
-            z-index: 10;
-            position: relative;
-        }
-
-        /* 火焰容器 - 絕對百分比定位鎖定噴嘴 */
-        .jet-flame-container {
+        /* 點火時背景擴散的環境光暈 (Radial Gradient) */
+        #glow-background {
             position: absolute;
-            top: 3.5%;    /* 根據 lighter on.png 噴嘴位置精確定位 */
-            right: 17%;   /* 根據 lighter on.png 噴嘴位置精確定位 */
-            width: 40px;
-            height: 150px;
-            display: none;
-            transform-origin: bottom center;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        .is-active .jet-flame-container {
-            display: block;
-            /* 高頻震動模擬高壓噴射 */
-            animation: flame-vibrate 0.04s infinite alternate;
-        }
-
-        /* 火焰構造：外焰 */
-        .flame-outer {
-            position: absolute;
-            bottom: 0;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, #ff4d00 10%, #ff8800 50%, transparent 100%);
-            filter: blur(5px);
-            border-radius: 50% 50% 20% 20%;
-            opacity: 0.8;
-        }
-
-        /* 火焰構造：白色/藍色核心 */
-        .flame-core {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 35%;
-            height: 60%;
-            background: linear-gradient(to top, #ffffff 0%, #00d4ff 40%, transparent 100%);
-            filter: blur(1px);
-            border-radius: 50% 50% 10% 10%;
-            z-index: 6;
-            box-shadow: 0 0 15px #00d4ff;
-        }
-
-        /* 環境火光光暈 */
-        .ambient-glow {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(255, 100, 0, 0.3) 0%, transparent 70%);
-            z-index: 1;
+            transform: translate(-50%, -50%);
+            width: 150vw;
+            height: 150vw;
+            background: radial-gradient(circle, rgba(255, 100, 0, 0.15) 0%, rgba(0, 0, 0, 0) 60%);
             opacity: 0;
-            transition: opacity 0.1s ease;
+            transition: opacity 0.1s ease-in-out;
+            pointer-events: none;
+            z-index: 0;
         }
-
-        .is-active .ambient-glow {
+        body.lit #glow-background {
             opacity: 1;
         }
 
-        /* 動畫：極高頻脈動 */
-        @keyframes flame-vibrate {
-            0% { transform: scaleY(1) translateX(-50%) rotate(-0.5deg); }
-            100% { transform: scaleY(1.08) translateX(-50%) rotate(0.5deg); }
+        /* 打火機容器 */
+        #lighter-container {
+            position: relative;
+            width: 65vw; /* 適配手機寬度 */
+            max-width: 300px;
+            cursor: pointer;
+            z-index: 10;
         }
 
-        /* 提示字 */
-        .hint {
-            position: absolute;
-            bottom: -50px;
+        /* 打火機圖片 */
+        #lighter-img {
             width: 100%;
-            text-align: center;
-            color: #555;
-            font-size: 14px;
-            letter-spacing: 2px;
+            display: block;
+            /* 加入一點細微陰影讓機身立體 */
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
         }
+
+        /* 防風噴射火焰 (Jet Flame) */
+        #flame {
+            position: absolute;
+            /* 定位到右上方的銀色圓盤噴嘴 */
+            /* 您可微調 top 與 right 的 % 數來達到完美對齊 */
+            top: -2%; 
+            right: 18%; 
+            
+            width: 14px;
+            height: 80px;
+            
+            /* 噴射火焰核心：底層白藍色 */
+            background: linear-gradient(to top, #ffffff 0%, #00ffff 20%, #ff5500 80%, transparent 100%);
+            border-radius: 50% 50% 20% 20%;
+            
+            /* 外焰光暈：藍橘交織 */
+            box-shadow: 
+                0 0 10px #00bfff,      /* 底部藍光 */
+                0 -10px 25px #ff4500,  /* 頂部橘紅光 */
+                0 0 40px #ff8c00;      /* 整體外圍橘光 */
+            
+            transform-origin: bottom center;
+            opacity: 0;
+            pointer-events: none; /* 確保不會阻擋點擊事件 */
+            mix-blend-mode: screen; /* 讓火焰與背景有真實的光線疊加效果 */
+        }
+
+        /* 點火時的火焰動畫狀態 */
+        #flame.active {
+            opacity: 1;
+            /* 極高頻微小脈動/震動 */
+            animation: jet-vibrate 0.04s infinite alternate;
+        }
+
+        /* 噴射火焰特有的高頻震動關鍵影格 */
+        @keyframes jet-vibrate {
+            0% { transform: translateY(0) scaleX(1) scaleY(1); }
+            100% { transform: translateY(-3px) scaleX(1.05) scaleY(1.02); }
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="lighter-wrapper" id="lighter">
-        <img src="lighter off.png" id="lighter-img" class="lighter-body" alt="Lighter">
-        
-        <div class="jet-flame-container">
-            <div class="flame-outer"></div>
-            <div class="flame-core"></div>
-            <div class="ambient-glow"></div>
-        </div>
+    <div id="glow-background"></div>
 
-        <div class="hint">TAP TO IGNITE</div>
+    <div id="lighter-container">
+        <img id="lighter-img" src="lighter off.png" alt="Lighter" draggable="false">
+        <div id="flame"></div>
     </div>
 
-    <audio id="ignite-audio" src="feuerzeug-sound.mp3" preload="auto"></audio>
+    <audio id="lighter-audio" src="lighter-sound-effect-feuerzeug-sound_PWeyCCjp.mp3" preload="auto"></audio>
 
     <script>
-        const lighter = document.getElementById('lighter');
-        const lighterImg = document.getElementById('lighter-img');
-        const audio = document.getElementById('ignite-audio');
+        const container = document.getElementById('lighter-container');
+        const img = document.getElementById('lighter-img');
+        const flame = document.getElementById('flame');
+        const audio = document.getElementById('lighter-audio');
         const body = document.body;
 
-        let ignited = false;
+        let isLit = false;
 
-        // 預載圖片防止切換閃爍
-        const imgOn = new Image();
-        imgOn.src = "lighter on.png";
-        const imgOff = new Image();
-        imgOff.src = "lighter off.png";
-
-        function handleToggle(e) {
-            e.preventDefault(); // 防止移動端縮放或長按菜單
+        // 切換打火機狀態的函數
+        function toggleLighter(e) {
+            // 防止手機端雙擊縮放或其他預設行為
+            e.preventDefault(); 
             
-            ignited = !ignited;
+            isLit = !isLit;
 
-            if (ignited) {
-                // 開火
-                body.classList.add('is-active');
-                lighterImg.src = "lighter on.png";
+            if (isLit) {
+                // 點火狀態
+                img.src = 'lighter on.png';
+                flame.classList.add('active');
+                body.classList.add('lit');
                 
-                // 音效對接：按下即播放
-                audio.currentTime = 0;
-                audio.play();
+                // 音效處理：每次點火都從頭播放
+                audio.currentTime = 0; 
+                audio.play().catch(error => {
+                    console.log("瀏覽器自動播放限制，請確保由使用者手動點擊觸發", error);
+                });
             } else {
-                // 關火
-                body.classList.remove('is-active');
-                lighterImg.src = "lighter off.png";
+                // 熄火狀態
+                img.src = 'lighter off.png';
+                flame.classList.remove('active');
+                body.classList.remove('lit');
                 
-                // 模擬物理手感，停止音效或讓它播完
-                // 若要立即切斷：audio.pause(); audio.currentTime = 0;
+                // 停止音效
+                audio.pause();
             }
         }
 
-        // 同時支援點擊與觸控，解決手機延遲與防誤觸
-        lighter.addEventListener('touchstart', handleToggle, { passive: false });
-        lighter.addEventListener('mousedown', (e) => {
-            if ('ontouchstart' in window) return; // 如果是觸控設備，忽略 mousedown
-            handleToggle(e);
-        });
-
-        // 解決音效受限：首次互動後解鎖音頻
-        document.body.addEventListener('click', () => {
-            if (audio.paused && !ignited) {
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }).catch(()=>{});
-            }
-        }, { once: true });
+        // 使用 pointerdown 事件可同時完美兼容滑鼠點擊與手機觸控，且反應最即時
+        container.addEventListener('pointerdown', toggleLighter);
     </script>
+
 </body>
 </html>
