@@ -11,12 +11,11 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #050505; /* 預設極暗環境 */
+            background-color: #050505;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            /* 禁用選取與預設點擊高光，提升 App 原生感 */
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: none;
@@ -28,10 +27,10 @@
             background-color: #2a1505;
         }
 
-        /* 點火時背景擴散的環境光暈 (Radial Gradient) */
+        /* 點火時背景擴散的環境光暈 */
         #glow-background {
             position: absolute;
-            top: 80%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 150vw;
@@ -49,7 +48,7 @@
         /* 打火機容器 */
         #lighter-container {
             position: relative;
-            width: 65vw; /* 適配手機寬度 */
+            width: 65vw;
             max-width: 300px;
             cursor: pointer;
             z-index: 10;
@@ -59,41 +58,49 @@
         #lighter-img {
             width: 100%;
             display: block;
-            /* 加入一點細微陰影讓機身立體 */
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
         }
 
-        /* 防風噴射火焰 (Jet Flame) */
+        /* ==========================================
+           🔥 防風噴射火焰 (可手動調整參數區)
+           ========================================== */
         #flame {
             position: absolute;
-            /* 定位到右上方的銀色圓盤噴嘴 */
-            /* 您可微調 top 與 right 的 % 數來達到完美對齊 */
+            
+            /* 【對齊參數】 
+               如果火焰沒有對準銀色噴嘴，請微調這裡的 % 數：
+               top: 數字越小(或負越多) -> 火焰越往上移
+               right: 數字越大 -> 火焰越往左移
+            */
             top: -2%; 
-            right: 18%; 
+            right: 17%; 
             
-            width: 14px;
-            height: 80px;
+            /* 【粗細與高度參數】 */
+            width: 28px;  /* 調整粗細：數值越大越粗 (原為 14px，目前為 28px) */
+            height: 85px; /* 調整高度：數值越大噴得越長 */
             
-            /* 噴射火焰核心：底層白藍色 */
+            /* 【顏色參數】噴射火焰核心 (底層白藍色) */
             background: linear-gradient(to top, #ffffff 0%, #00ffff 20%, #ff5500 80%, transparent 100%);
             border-radius: 50% 50% 20% 20%;
             
-            /* 外焰光暈：藍橘交織 */
+            /* 【光暈參數】外焰光暈 (藍橘交織) 
+               要調整發光範圍，請更改每個顏色的第三個數值(px)：
+               例如把 15px 改成 30px，藍光範圍就會變大兩倍。
+            */
             box-shadow: 
-                0 0 10px #00bfff,      /* 底部藍光 */
-                0 -10px 25px #ff4500,  /* 頂部橘紅光 */
-                0 0 40px #ff8c00;      /* 整體外圍橘光 */
+                0 0 15px #00bfff,      /* 底部藍光擴散範圍 */
+                0 -10px 30px #ff4500,  /* 頂部橘紅光擴散範圍 */
+                0 0 50px #ff8c00;      /* 整體外圍橘光擴散範圍 */
             
             transform-origin: bottom center;
             opacity: 0;
-            pointer-events: none; /* 確保不會阻擋點擊事件 */
-            mix-blend-mode: screen; /* 讓火焰與背景有真實的光線疊加效果 */
+            pointer-events: none;
+            mix-blend-mode: screen;
         }
 
         /* 點火時的火焰動畫狀態 */
         #flame.active {
             opacity: 1;
-            /* 極高頻微小脈動/震動 */
             animation: jet-vibrate 0.04s infinite alternate;
         }
 
@@ -125,36 +132,29 @@
 
         let isLit = false;
 
-        // 切換打火機狀態的函數
         function toggleLighter(e) {
-            // 防止手機端雙擊縮放或其他預設行為
             e.preventDefault(); 
             
             isLit = !isLit;
 
             if (isLit) {
-                // 點火狀態
                 img.src = 'lighter on.png';
                 flame.classList.add('active');
                 body.classList.add('lit');
                 
-                // 音效處理：每次點火都從頭播放
                 audio.currentTime = 0; 
                 audio.play().catch(error => {
                     console.log("瀏覽器自動播放限制，請確保由使用者手動點擊觸發", error);
                 });
             } else {
-                // 熄火狀態
                 img.src = 'lighter off.png';
                 flame.classList.remove('active');
                 body.classList.remove('lit');
                 
-                // 停止音效
                 audio.pause();
             }
         }
 
-        // 使用 pointerdown 事件可同時完美兼容滑鼠點擊與手機觸控，且反應最即時
         container.addEventListener('pointerdown', toggleLighter);
     </script>
 
