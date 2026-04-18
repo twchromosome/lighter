@@ -141,7 +141,7 @@ html, body {
 #hint {
   flex-shrink:0;
   font-family:system-ui, -apple-system, sans-serif;
-  font-size:13px;
+  font-size:39px;
   font-weight:500;
   letter-spacing:0.25em;
   color:rgba(255,255,255,0.28);
@@ -214,14 +214,14 @@ function autoFit() {
   const hint      = document.getElementById('hint');
   const fl        = document.querySelectorAll('.fl-outer,.fl-mid,.fl-inner,.fl-base');
 
-  const HINT_H    = 36;   // 提示文字高度
-  const PADDING   = 12;   // 上下各留邊距
+  const HINT_H    = 80;   // 提示文字高度
+  const PADDING   = 4;    // 上下各留邊距
 
   // 總可用高度
   const totalH = H - PADDING * 2;
 
-  // 打火機最大高度 = 總可用的 55%
-  let lh = totalH * 0.55;
+  // 打火機最大高度 = 總可用的 60%
+  let lh = totalH * 0.60;
   let lw = lh * IMG_RATIO;
   // 不超過螢幕寬 85%
   if (lw > W * 0.85) {
@@ -229,8 +229,8 @@ function autoFit() {
     lh = lw / IMG_RATIO;
   }
 
-  // 火焰高度 = 剩餘空間
-  const flameH = totalH - lh - HINT_H;
+  // 火焰高度 = 剩餘空間的 2/3
+  const flameH = (totalH - lh - HINT_H) * 0.67;
   const flameW = lw * 0.30;
 
   // 套用尺寸
