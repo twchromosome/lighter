@@ -6,11 +6,11 @@
 <title>虛擬噴射打火機</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; min-height: 100vh; overflow: hidden; background: #1a1a1a; }
+html, body { width: 100%; height: 100dvh; min-height: 100dvh; overflow: hidden; background: #1a1a1a; }
 #scene {
-  width: 100%; height: 100%; min-height: 100vh;
+  width: 100%; height: 100dvh; min-height: 100dvh;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end;
+  align-items: center; justify-content: flex-end; gap: 0;
   padding-bottom: 5vh;
   background: #1a1a1a; transition: background 0.3s;
   position: relative; cursor: pointer;
@@ -168,34 +168,37 @@ scene.addEventListener('pointercancel',function(e){
 
 // 自動計算：讓打火機+火焰完整塞進螢幕
 function autoFit() {
-  const scene = document.getElementById('scene');
   const wrap = document.getElementById('lighter-wrap');
   const flameWrap = document.getElementById('flame-wrap');
-  const img = document.getElementById('lighter-img');
-  
-  const screenH = window.innerHeight;
-  const screenW = window.innerWidth;
-  
-  // 可用高度 = 螢幕高度 - padding底部(8vh) - 火焰區域(35%) - 安全邊距
-  const availH = screenH * 0.50;
-  const availW = screenW * 0.88;
-  
-  // 圖片原始比例 (寬:高 = 853:2299 ≈ 0.371)
-  const imgRatio = 853 / 2299;
-  
-  // 根據可用高度計算寬度
-  let lw = availH * imgRatio;
-  if (lw > availW) lw = availW;
-  const lh = lw / imgRatio;
-  
-  wrap.style.width = lw + 'px';
+
+  // 用 visualViewport 取得真實可視高度（扣掉網址列）
+  const vp = window.visualViewport;
+  const screenH = vp ? vp.height : window.innerHeight;
+  const screenW = vp ? vp.width  : window.innerWidth;
+
+  const imgRatio = 853 / 2299;  // 打火機寬高比
+  const hintH = 40;             // PRESS TO IGNITE 文字高度
+  const safeBottom = 20;        // 底部安全距離
+
+  // 打火機最大可用高度 = 可視高度的 52%（留空間給火焰和提示）
+  const maxLighterH = screenH * 0.52;
+  const maxLighterW = screenW * 0.82;
+
+  let lh = maxLighterH;
+  let lw = lh * imgRatio;
+  if (lw > maxLighterW) {
+    lw = maxLighterW;
+    lh = lw / imgRatio;
+  }
+
+  wrap.style.width  = lw + 'px';
   wrap.style.height = lh + 'px';
-  
-  // 火焰大小 = 打火機寬度的 60%，高度 = 螢幕剩餘空間
-  const flameW = lw * 0.35;
-  const flameH = (screenH - lh - screenH * 0.08 - 20) * 0.75;
-  flameWrap.style.width = Math.max(flameW, 30) + 'px';
-  flameWrap.style.height = Math.max(flameH, 80) + 'px';
+
+  // 火焰高度 = 剩餘空間（扣打火機、提示文字、底部留白）
+  const flameH = screenH - lh - hintH - safeBottom - 10;
+  const flameW = lw * 0.32;
+  flameWrap.style.width  = Math.max(flameW, 28) + 'px';
+  flameWrap.style.height = Math.max(flameH, 60) + 'px';
 }
 
 autoFit();
